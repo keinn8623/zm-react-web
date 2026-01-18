@@ -1,0 +1,172 @@
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+  color: #333;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100%;
+}
+
+/* 容器样式 */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* 头部样式 */
+.header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px 0;
+  position: relative;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.logo {
+  margin: 0 auto;
+  font-size: 24px;
+  height: 64px;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+/* Ant Design Menu 样式调整 */
+.header-content .ant-menu {
+  width: 100%;
+  justify-content: center;
+}
+
+.header-content .ant-menu-horizontal {
+  border-bottom: none;
+}
+
+.header-content .ant-menu-item {
+  margin: 0 16px;
+}
+
+.Sider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.nav ul {
+  display: flex;
+  list-style: none;
+  text-align: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.nav li {
+  margin-left: 24px;
+}
+
+.nav a {
+  color: #333;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.nav a:hover {
+  color: #666;
+}
+
+/* 主内容区样式 */
+.main {
+  padding: 40px 0;
+  min-height: calc(100vh - 160px);
+}
+
+/* 首页样式 */
+.home h1 {
+  font-size: 32px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.home p {
+  font-size: 18px;
+  color: #666;
+}
+
+/* 关于页样式 */
+.about h1 {
+  font-size: 32px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.about p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+/* 底部样式 */
+.footer {
+  background-color: #333;
+  color: #ffffff;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav {
+    margin-top: 16px;
+  }
+
+  .nav li {
+    margin-left: 0;
+    margin-right: 16px;
+  }
+}
