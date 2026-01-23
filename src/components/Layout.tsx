@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Layout as AntLayout, Menu } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, VideoCameraOutlined, UploadOutlined } from '@ant-design/icons';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // import Header from './Header';
 import Footer from './Footer';
 
@@ -14,6 +15,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
   const toggle = () => {
@@ -42,8 +44,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
             }
           >
-            <Menu.Item key="5" icon={<UserOutlined />}>学生管理</Menu.Item>
-            <Menu.Item key="6" icon={<UserOutlined />}>教师管理</Menu.Item>
+            <Menu.Item key="5" icon={<UserOutlined />} onClick={() => navigate('/stuManage')}>学生管理</Menu.Item>
+            <Menu.Item key="6" icon={<UserOutlined />} onClick={() => navigate('/teacherManage')}>教师管理</Menu.Item>
           </SubMenu>
           <SubMenu
             key="sub2"
@@ -56,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <Menu.Item key="9" icon={<UploadOutlined />}>成绩录入</Menu.Item>
             <Menu.Item key="10" icon={<VideoCameraOutlined />}>成绩分析</Menu.Item>
-            <Menu.Item key="11" icon={<UploadOutlined />}>生成错题</Menu.Item>
+            <Menu.Item key="11" icon={<UploadOutlined />} onClick={() => navigate('/generateText')}>生成错题</Menu.Item>
           </SubMenu>
           <Menu.Item key="12" icon={<UploadOutlined />}>操作日志</Menu.Item>
         </Menu>
@@ -65,6 +67,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <AntLayout.Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '16px' }}>
           <div onClick={toggle} style={{ cursor: 'pointer' }}>
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          </div>
+          <div>
+            {/* <Header /> */}
           </div>
         </AntLayout.Header>
         <Content
