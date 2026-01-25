@@ -61,7 +61,7 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
   );
 };
 
-const EditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; selectedData: string[] }> = ({ onSelectChange, selectedData }) => {
+const ScoreEditableContext: React.FC = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>(originData);
   const [editingKey, setEditingKey] = useState('');
@@ -136,7 +136,7 @@ const EditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; sele
             const checkedKeys = newData.filter(item => item.checked).map(item => item.key);
             console.log('已勾选的 key:', checkedKeys);
             // 调用父组件的选中项变化处理函数
-            onSelectChange(checkedKeys);
+            // onSelectChange(checkedKeys);
           }}
         >
         </Checkbox>
@@ -156,7 +156,7 @@ const EditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; sele
             const checkedKeys = newData.filter(item => item.checked).map(item => item.key);
             console.log('已勾选的 key:', checkedKeys);
             // 调用父组件的选中项变化处理函数
-            onSelectChange(checkedKeys);
+            // onSelectChange(checkedKeys);
           }}
         />
       ),
@@ -242,4 +242,4 @@ const EditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; sele
   );
 };
 
-export default EditableContext;
+export default ScoreEditableContext;

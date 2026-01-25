@@ -220,3 +220,32 @@ html, body {
     text-align: center;
   }
 }
+
+/* Row 样式 */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.row:last-child {
+  margin-bottom: 0;
+}
+
+.row > * {
+  flex: 1;
+  text-align: center;
+}
+
+/* Col 样式 */
+.col {
+  margin-right: 16px;
+
+  
+}
+
+.col:last-child {
+  margin-right: 0;
+}

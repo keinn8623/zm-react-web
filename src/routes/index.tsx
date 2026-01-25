@@ -4,6 +4,7 @@ import About from '@/pages/about/About';
 import StuManage from '@/pages/stuManage/StuManage';
 import TeacherManage from '@/pages/teacherManage/TeacherManage';
 import GenerateText from '@/pages/generateTest/GenerateText';
+import ScoreRecord from '@/pages/scoreRecord/ScoreRecord';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,11 @@ const router = createBrowserRouter([
     path: '/generateText',
     element: <GenerateText />,
   },
+  {
+    path: '/scoreRecord',
+    element: <ScoreRecord />,
+  },
+
 ]);
 
 export default router;

@@ -56,15 +56,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
             }
           >
-            <Menu.Item key="9" icon={<UploadOutlined />}>成绩录入</Menu.Item>
+            <Menu.Item key="9" icon={<UploadOutlined />} onClick={() => navigate('/scoreRecord')}>成绩录入</Menu.Item>
             <Menu.Item key="10" icon={<VideoCameraOutlined />}>成绩分析</Menu.Item>
             <Menu.Item key="11" icon={<UploadOutlined />} onClick={() => navigate('/generateText')}>生成错题</Menu.Item>
           </SubMenu>
-          <Menu.Item key="12" icon={<UploadOutlined />}>操作日志</Menu.Item>
+          <Menu.Item key="12" icon={<UploadOutlined />} onClick={() => navigate('/operationLog')}>操作日志</Menu.Item>
         </Menu>
       </Sider>
       <AntLayout>
-        <AntLayout.Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '16px' }}>
+        <AntLayout.Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '16px', height: 40 }}>
           <div onClick={toggle} style={{ cursor: 'pointer' }}>
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>

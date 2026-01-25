@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
-import EditableContext from "./EditableContex";
+import EditableContext from "./StuEditableContex";
 import DrawerComponent from "@/components/DrawerComponent";
-import { Button } from "antd";
+import AdvancedSearchForm from "@/pages/stuManage/AdvancedSearchForm";
+import { Button, message } from "antd";
 import { useState } from "react";
 
 const StuManage: React.FC = () => {
@@ -15,6 +16,16 @@ const StuManage: React.FC = () => {
     setSelectedKeys(keys);
   };
 
+  // 删除选中项
+  const deleteSelected = () => {
+    if (selectedKeys.length === 0) {
+      message.warning("请选择要删除的学生");
+      return;
+    }
+    message.success(`成功删除 ${selectedKeys.length} 个学生`);
+    setSelectedKeys([]);
+  }
+
   // 打开 Drawer
   const openDrawer = () => {
     setDrawerStatus(true);
@@ -27,7 +38,7 @@ const StuManage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="button-container">
+      {/* <div className="button-container">
         <Button
           type="primary"
           onClick={openDrawer}
@@ -37,14 +48,15 @@ const StuManage: React.FC = () => {
         </Button>
         <Button
           type="primary"
-          onClick={() => console.log("父组件中选中项:", selectedKeys)}
+          onClick={deleteSelected}
           className="primary-button import-button"
         >
           删除
         </Button>
       </div>
       <EditableContext onSelectChange={handleSelectChange} selectedData={selectedKeys} />
-      <DrawerComponent drawerStatus={drawerStatus} onClose={closeDrawer} />
+      <DrawerComponent drawerStatus={drawerStatus} onClose={closeDrawer} /> */}
+      <AdvancedSearchForm />
     </Layout>
   );
 };
