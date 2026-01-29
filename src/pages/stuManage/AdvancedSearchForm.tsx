@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 import {
   Button,
   Col,
@@ -14,10 +14,13 @@ import {
 import CreateFormComponent from "@/components/CreateFormComponent";
 import StuEditableContext from "./StuEditableContex";
 
+const SelectedContext = createContext<[string[], React.Dispatch<React.SetStateAction<string[]>>]>([[], () => {}]);
+
 const AdvancedSearchForm = () => {
   const { token } = theme.useToken();
   const [form] = Form.useForm();
   const [createStatus, setCreateStatus] = useState(false);
+  const [selectedKeys] = useContext(SelectedContext);
 
   const formStyle: React.CSSProperties = {
     maxWidth: "none",
@@ -134,6 +137,16 @@ const AdvancedSearchForm = () => {
     console.log("Received values of form: ", values);
   };
 
+  // 删除选中项
+  const deleteSelected = () => {
+    if (selectedKeys.length === 0) {
+      message.warning("请选择要删除的学生");
+      return;
+    }
+    console.log("StuEditableContext中勾选的数据:", selectedKeys);
+    message.success(`成功删除 ${selectedKeys.length} 个学生`);
+  };
+
   return (
     <>
       <Form
@@ -151,14 +164,12 @@ const AdvancedSearchForm = () => {
             <Button type="primary" htmlType="submit">
               查询
             </Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" onClick={deleteSelected}>
               删除
             </Button>
             <Button
               onClick={() => {
                 form.resetFields();
-                // 重置DatePicker
-                DatePicker.RangePicker.value = null;
               }}
             >
               重置
@@ -178,13 +189,13 @@ const App: React.FC = () => {
   const { token } = theme.useToken();
 
   const listStyle: React.CSSProperties = {
-    lineHeight: "200px",
     textAlign: "center",
     background: token.colorFillAlter,
     borderRadius: token.borderRadiusLG,
     marginTop: 16,
+    padding: 16,
+    boxSizing: "border-box",
   };
-
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   
@@ -205,13 +216,14 @@ const App: React.FC = () => {
   }
 
   return (
-    <>
-      <AdvancedSearchForm />
-      <div style={listStyle}>
-        Search Result List  // TODO 使用Context处理多层组件中传递数据
-        <StuEditableContext onSelectChange={handleSelectChange} selectedData={selectedKeys} />
-      </div>
-    </>
+    <SelectedContext.Provider value={[selectedKeys, setSelectedKeys]}>
+      <>
+        <AdvancedSearchForm />
+        <div style={listStyle}>
+          <StuEditableContext onSelectChange={handleSelectChange} selectedData={selectedKeys} />
+        </div>
+      </>
+    </SelectedContext.Provider>
   );
 };
 

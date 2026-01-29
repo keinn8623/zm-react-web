@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import type { TableProps } from 'antd';
 import { Form, Input, InputNumber, Popconfirm, Table, Typography, Checkbox } from 'antd';
 
 interface DataType {
   key: string;
   name: string;
-  age: number;
-  address: string;
+  campus: string;
+  grade: string;
+  class: string;
+  phone: string;
   checked: boolean;
 }
 
 const originData = Array.from({ length: 100 }).map<DataType>((_, i) => ({
   key: i.toString(),
   name: `Edward ${i}`,
-  age: 32,
-  address: `London Park no. ${i}`,
+  campus: `Campus ${i}`,
+  grade: `Grade ${i}`,
+  class: `Class ${i}`,
+  phone: `1380000000${i}`,
   checked: false,
 }));
 
@@ -37,14 +41,14 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
   children,
   ...restProps
 }) => {
-  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+  const inputNode = inputType === 'number' ? <InputNumber size="middle" style={{ textAlign: 'center' }} /> : <Input size="middle" style={{ textAlign: 'center' }} />;
 
   return (
-    <td {...restProps}>
+    <td {...restProps} style={{ textAlign: 'center' }}>
       {editing ? (
         <Form.Item
           name={dataIndex}
-          style={{ margin: 0 }}
+          style={{ margin: 0, textAlign: 'center' }}
           rules={[
             {
               required: true,
@@ -62,7 +66,6 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
 };
 
 const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; selectedData: string[] }> = ({ onSelectChange }) => {
-// const StuEditableContext: React.FC = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>(originData);
   const [editingKey, setEditingKey] = useState('');
@@ -79,8 +82,6 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
   const cancel = () => {
     setEditingKey('');
   };
-
-  
 
   const save = async (key: React.Key) => {
     try {
@@ -144,7 +145,8 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
       ),
       dataIndex: 'checked',
       key: 'checked',
-      width: '8%',
+      width: '5%',
+      align: 'center',
       render: (_: boolean, record: DataType) => (
         <Checkbox 
           checked={record.checked}
@@ -163,26 +165,45 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
       ),
     },
     {
-      title: 'name',
+      title: '姓名',
       dataIndex: 'name',
-      width: '20%',
+      width: '15%',
+      align: 'center',
       editable: true,
     },
     {
-      title: 'age',
-      dataIndex: 'age',
-      width: '12%',
+      title: '校区',
+      dataIndex: 'campus',
+      width: '15%',
+      align: 'center',
       editable: true,
     },
     {
-      title: 'address',
-      dataIndex: 'address',
-      width: '40%',
+      title: '年级',
+      dataIndex: 'grade',
+      width: '15%',
+      align: 'center',
+      editable: true,
+    },
+    {
+      title: '班级',
+      dataIndex: 'class',
+      width: '15%',
+      align: 'center',
+      editable: true,
+    },
+    {
+      title: '电话',
+      dataIndex: 'phone',
+      width: '15%',
+      align: 'center',
       editable: true,
     },
     {
       title: 'operation',
       dataIndex: 'operation',
+      width: '10%',
+      align: 'center',
       render: (_: any, record: DataType) => {
         const editable = isEditing(record);
         return editable ? (
@@ -209,6 +230,7 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
     }
     return {
       ...col,
+      align: 'center',
       onCell: (record: DataType) => ({
         record,
         inputType: col.dataIndex === 'age' ? 'number' : 'text',
@@ -220,26 +242,31 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
   });
 
   return (
-    <Form form={form} component={false}>
-      <Table<DataType>
-        components={{
-          body: { cell: EditableCell },
-        }}
-        bordered
-        dataSource={data}
-        columns={mergedColumns}
-        rowClassName="editable-row"
-        pagination={{
-          onChange: (page, size) => {
-            setCurrentPage(page);
-            setPageSize(size);
-            cancel();
-          },
-          current: currentPage,
-          pageSize: pageSize,
-        }}
-      />
-    </Form>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+      <Form form={form} component={false}>
+        <Table<DataType>
+          components={{
+            body: { cell: EditableCell },
+          }}
+          bordered
+          size="middle"
+          dataSource={data}
+          columns={mergedColumns}
+          rowClassName="editable-row"
+          scroll={{ y: 480 }}
+          pagination={{
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+              cancel();
+            },
+            current: currentPage,
+            pageSize: pageSize,
+            size: "middle",
+          }}
+        />
+      </Form>
+    </div>
   );
 };
 
