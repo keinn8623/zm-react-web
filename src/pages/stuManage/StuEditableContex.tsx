@@ -41,7 +41,7 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
   children,
   ...restProps
 }) => {
-  const inputNode = inputType === 'number' ? <InputNumber size="middle" style={{ textAlign: 'center' }} /> : <Input size="middle" style={{ textAlign: 'center' }} />;
+  const inputNode = inputType === 'number' ? <InputNumber size="small" style={{ textAlign: 'center' }} /> : <Input size="small" style={{ textAlign: 'center' }} />;
 
   return (
     <td {...restProps} style={{ textAlign: 'center' }}>
@@ -249,7 +249,7 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
             body: { cell: EditableCell },
           }}
           bordered
-          size="middle"
+          size="small"
           dataSource={data}
           columns={mergedColumns}
           rowClassName="editable-row"
@@ -262,7 +262,7 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
             },
             current: currentPage,
             pageSize: pageSize,
-            size: "middle",
+            size: "small",
           }}
         />
       </Form>
