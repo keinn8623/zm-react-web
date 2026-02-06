@@ -1,26 +1,17 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useImperativeHandle } from 'react';
 import type { TableProps } from 'antd';
-import { Form, Input, InputNumber, Popconfirm, Table, Typography, Checkbox } from 'antd';
+import { Form, Input, InputNumber, Popconfirm, Table, Typography, Checkbox, Spin, message } from 'antd';
+import axios from 'axios';
 
 interface DataType {
   key: string;
   name: string;
   campus: string;
   grade: string;
-  class: string;
+  clazz: string;
   phone: string;
   checked: boolean;
 }
-
-const originData = Array.from({ length: 100 }).map<DataType>((_, i) => ({
-  key: i.toString(),
-  name: `Edward ${i}`,
-  campus: `Campus ${i}`,
-  grade: `Grade ${i}`,
-  class: `Class ${i}`,
-  phone: `1380000000${i}`,
-  checked: false,
-}));
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
@@ -65,17 +56,224 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
   );
 };
 
-const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; selectedData: string[] }> = ({ onSelectChange }) => {
+interface StuEditableContextProps {
+  onSelectChange: (keys: string[]) => void;
+  selectedData: string[];
+  searchParams?: any;
+  onDeleteSuccess?: () => void;
+}
+
+const StuEditableContext: React.FC<StuEditableContextProps> = React.forwardRef(({ onSelectChange, selectedData, searchParams, onDeleteSuccess }, ref) => {
   const [form] = Form.useForm();
-  const [data, setData] = useState<DataType[]>(originData);
+  const [data, setData] = useState<DataType[]>([]);
   const [editingKey, setEditingKey] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(true);
+
+  // 删除选中项
+  const deleteSelected = async (keys: string[]) => {
+    if (keys.length === 0) {
+      message.warning('请选择要删除的学生');
+      return;
+    }
+    try {
+      setLoading(true);
+      
+      // 发送删除请求到后端接口
+      await axios.post('/api/stu/delete', keys);
+      message.success(`成功删除 ${keys.length} 个学生`);
+      // 调用删除成功回调，刷新数据
+      if (onDeleteSuccess) {
+        onDeleteSuccess();
+      }
+      
+      // 刷新当前页面数据
+      const fetchData = async () => {
+        // 构建查询参数，确保只传递非空值并处理日期范围
+        const params = {};
+        if (searchParams) {
+          Object.entries(searchParams).forEach(([key, value]) => {
+            // 跳过空值
+            if (value !== undefined && value !== null && value !== '') {
+              if (key === 'data' && Array.isArray(value) && value.length === 2) {
+                // 处理日期范围，分别赋值给 startTime 和 endTime
+                const [startDate, endDate] = value;
+                if (startDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const start = new Date(startDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  start.setHours(start.getHours() + 8);
+                  params['startTimeStr'] = start.toISOString();
+                }
+                if (endDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const end = new Date(endDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  end.setHours(end.getHours() + 8);
+                  params['endTimeStr'] = end.toISOString();
+                }
+              } else if (key === 'date' && Array.isArray(value) && value.length === 2) {
+                // 处理可能的 date 字段，同样转换为 startTime 和 endTime
+                const [startDate, endDate] = value;
+                if (startDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const start = new Date(startDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  start.setHours(start.getHours() + 8);
+                  params['startTimeStr'] = start.toISOString();
+                }
+                if (endDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const end = new Date(endDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  end.setHours(end.getHours() + 8);
+                  params['endTimeStr'] = end.toISOString();
+                }
+              } else if (key !== 'data' && key !== 'date') {
+                // 处理其他参数
+                params[key] = value;
+              }
+            }
+          });
+        }
+        
+        const response = await axios.get('/api/stu/query', {
+          params
+        });
+        // 确保 data 始终是一个数组
+        if (Array.isArray(response.data.data)) {
+          // 处理后端返回的数据，确保每个数据项都有 key 属性
+          const processedData = response.data.data.map((item) => ({
+            ...item,
+            key: item.stuInfoId,
+            // 确保每个数据项都有 checked 属性
+            checked: false
+          }));
+          setData(processedData);
+        } else {
+          console.error('后端返回的数据格式错误，期望数组:', response.data);
+          message.error('数据格式错误，请联系管理员');
+          setData([]);
+        }
+      };
+      await fetchData();
+    } catch (error) {
+      console.error('删除学生数据失败:', error);
+      message.error('删除学生数据失败，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 暴露删除方法给父组件
+  useImperativeHandle(ref, () => ({
+    deleteSelected: (keys: string[]) => deleteSelected(keys)
+  }));
+
+  // 同步 selectedData 和 data 状态中的 checked 属性
+  useEffect(() => {
+    if (selectedData) {
+      setData(prevData => {
+        return prevData.map(item => ({
+          ...item,
+          checked: selectedData.includes(item.key)
+        }));
+      });
+    }
+  }, [selectedData]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      console.log('searchParams:', searchParams);
+      try {
+        setLoading(true);
+        // 构建查询参数，确保只传递非空值并处理日期范围
+        const params = {};
+        if (searchParams) {
+          Object.entries(searchParams).forEach(([key, value]) => {
+            // 跳过空值
+            if (value !== undefined && value !== null && value !== '') {
+              if (key === 'data' && Array.isArray(value) && value.length === 2) {
+                // 处理日期范围，分别赋值给 startTime 和 endTime
+                const [startDate, endDate] = value;
+                if (startDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const start = new Date(startDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  start.setHours(start.getHours() + 8);
+                  params['startTimeStr'] = start.toISOString();
+                }
+                if (endDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const end = new Date(endDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  end.setHours(end.getHours() + 8);
+                  params['endTimeStr'] = end.toISOString();
+                }
+              } else if (key === 'date' && Array.isArray(value) && value.length === 2) {
+                // 处理可能的 date 字段，同样转换为 startTime 和 endTime
+                const [startDate, endDate] = value;
+                if (startDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const start = new Date(startDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  start.setHours(start.getHours() + 8);
+                  params['startTimeStr'] = start.toISOString();
+                }
+                if (endDate) {
+                  // 转换为时间类型，确保使用上海时区（UTC+8）
+                  const end = new Date(endDate);
+                  // 调整为上海时区（UTC+8），确保日期正确
+                  end.setHours(end.getHours() + 8);
+                  params['endTimeStr'] = end.toISOString();
+                }
+              } else if (key !== 'data' && key !== 'date') {
+                // 处理其他参数
+                params[key] = value;
+              }
+            }
+          });
+        }
+        
+        console.log('最终传递给后端的参数:', params);
+        
+        const response = await axios.get('/api/stu/query', {
+          params
+        });
+        // 确保 data 始终是一个数组
+        if (Array.isArray(response.data.data)) {
+          // 处理后端返回的数据，确保每个数据项都有 key 属性
+          const processedData = response.data.data.map((item) => ({
+            ...item,
+            key: item.stuInfoId,
+            // 确保每个数据项都有 checked 属性
+            checked: false
+          }));
+          setData(processedData);
+          console.log('处理后的数据:', processedData);
+        } else {
+          console.error('后端返回的数据格式错误，期望数组:', response.data);
+          message.error('数据格式错误，请联系管理员');
+          setData([]);
+        }
+      } catch (error) {
+        console.error('获取学生数据失败:', error);
+        message.error('获取学生数据失败，请稍后重试');
+        // 失败时使用空数组
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [searchParams]);
 
   const isEditing = (record: DataType) => record.key === editingKey;
 
   const edit = (record: Partial<DataType> & { key: React.Key }) => {
-    form.setFieldsValue({ name: '', age: '', address: '', ...record });
+    form.setFieldsValue({ stuName: '', age: '', address: '', ...record });
     setEditingKey(record.key);
   };
 
@@ -83,20 +281,40 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
     setEditingKey('');
   };
 
-  const save = async (key: React.Key) => {
+  const save = async (record: DataType) => {
+    console.log('保存行数据:', record.key);
+    console.log('保存行数据:', record);
     try {
       const row = (await form.validateFields()) as Partial<DataType>;
 
       const newData = [...data];
-      const index = newData.findIndex((item) => key === item.key);
+      const index = newData.findIndex((item) => record.key === item.key);
       if (index > -1) {
         const item = newData[index];
-        newData.splice(index, 1, {
+        const updatedItem = {
           ...item,
           ...row,
-        });
+        };
+        newData.splice(index, 1, updatedItem);
         setData(newData);
         setEditingKey('');
+        
+        // 发送更新请求到后端接口
+        console.log("==============准备发送更新请求==============")
+        console.log("请求 URL: /api/stu/update")
+        console.log("请求数据:", updatedItem)
+        let response;
+        try {
+          setLoading(true);
+          response = await axios.post('/api/stu/update', updatedItem);
+          console.log("==============更新请求发送成功==============")
+          message.success(response.data.message);
+        } catch (error) {
+          console.error('更新学生数据失败:', error);
+          message.error(response?.data?.message || '更新学生数据失败，请稍后重试');
+        } finally {
+          setLoading(false);
+        }
       } else {
         // 为新添加的行设置默认 checked 状态
         newData.push({ ...row as DataType, checked: false });
@@ -166,10 +384,10 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
     },
     {
       title: '姓名',
-      dataIndex: 'name',
+      dataIndex: 'stuName',
       width: '15%',
       align: 'center',
-      editable: true,
+      editable: false,
     },
     {
       title: '校区',
@@ -187,7 +405,7 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
     },
     {
       title: '班级',
-      dataIndex: 'class',
+      dataIndex: 'clazz',
       width: '15%',
       align: 'center',
       editable: true,
@@ -208,7 +426,7 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
         const editable = isEditing(record);
         return editable ? (
           <span>
-            <Typography.Link onClick={() => save(record.key)} style={{ marginInlineEnd: 8 }}>
+            <Typography.Link onClick={() => save(record)} style={{ marginInlineEnd: 8 }}>
               Save
             </Typography.Link>
             <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
@@ -243,31 +461,33 @@ const StuEditableContext: React.FC<{ onSelectChange: (keys: string[]) => void; s
 
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
-      <Form form={form} component={false}>
-        <Table<DataType>
-          components={{
-            body: { cell: EditableCell },
-          }}
-          bordered
-          size="small"
-          dataSource={data}
-          columns={mergedColumns}
-          rowClassName="editable-row"
-          scroll={{ y: 480 }}
-          pagination={{
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size);
-              cancel();
-            },
-            current: currentPage,
-            pageSize: pageSize,
-            size: "small",
-          }}
-        />
-      </Form>
+      <Spin spinning={loading} tip="加载中...">
+        <Form form={form} component={false}>
+          <Table<DataType>
+            components={{
+              body: { cell: EditableCell },
+            }}
+            bordered
+            size="small"
+            dataSource={data}
+            columns={mergedColumns}
+            rowClassName="editable-row"
+            scroll={{ y: 480 }}
+            pagination={{
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+                cancel();
+              },
+              current: currentPage,
+              pageSize: pageSize,
+              size: "small",
+            }}
+          />
+        </Form>
+      </Spin>
     </div>
   );
-};
+});
 
 export default StuEditableContext;

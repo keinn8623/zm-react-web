@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Modal, Radio, Row, Col, Select } from 'antd';
+import { Form, Input, Modal, Row, Col, Select, message } from 'antd';
 import axios from 'axios';
 
 interface Values {
@@ -21,6 +21,11 @@ const CreateFormComponent: React.FC<CreateFormComponentProps> = ({ open, onClose
   const addStuInfo = async () => {
     try {
       const res = await axios.get('api/stu/add', { params: formValues });
+      if (res.data.code === 200) {
+        message.success(res.data.message);
+      } else {
+        message.error(res.data.message);
+      }
       console.log('表单数据：', formValues);
       console.log('后端返回的数据：', res.data);
     } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from "react";
+import React, { useState, createContext, useContext, useRef } from "react";
 import {
   Button,
   Col,
@@ -14,13 +14,14 @@ import {
 import CreateFormComponent from "@/components/CreateFormComponent";
 import StuEditableContext from "./StuEditableContex";
 
-const SelectedContext = createContext<[string[], React.Dispatch<React.SetStateAction<string[]>>]>([[], () => {}]);
+const SelectedContext = createContext<[string[], React.Dispatch<React.SetStateAction<string[]>>, any, React.Dispatch<React.SetStateAction<any>>]>([[], () => {}, {}, () => {}]);
 
 const AdvancedSearchForm = () => {
   const { token } = theme.useToken();
   const [form] = Form.useForm();
   const [createStatus, setCreateStatus] = useState(false);
-  const [selectedKeys] = useContext(SelectedContext);
+  const [selectedKeys, setSelectedKeys, searchParams, setSearchParams] = useContext(SelectedContext);
+  const stuEditableRef = useRef<any>(null);
 
   const formStyle: React.CSSProperties = {
     maxWidth: "none",
@@ -29,12 +30,40 @@ const AdvancedSearchForm = () => {
     padding: 24,
   };
 
+  // 删除选中项
+  const deleteSelected = () => {
+    console.log("==============AdvancedSearchForm deleteSelected 函数被调用==============")
+    console.log("选中的 keys:", selectedKeys)
+    console.log("stuEditableRef.current:", stuEditableRef.current)
+    
+    if (selectedKeys.length === 0) {
+      message.warning("请选择要删除的学生");
+      return;
+    }
+    // 调用 StuEditableContext 组件的 deleteSelected 方法
+    if (stuEditableRef.current) {
+      console.log("==============准备调用 StuEditableContext 的 deleteSelected 方法==============")
+      stuEditableRef.current.deleteSelected(selectedKeys);
+      // 清空选中状态
+      setSelectedKeys([]);
+    } else {
+      console.error("stuEditableRef.current 为空，无法调用 deleteSelected 方法")
+    }
+  }
+
+  // 处理选中项变化
+  const handleSelectChange = (keys: string[]) => {
+    console.log("==============AdvancedSearchForm handleSelectChange 函数被调用==============")
+    console.log("选中的 keys:", keys)
+    setSelectedKeys(keys);
+  }
+
   const getFields = () => {
     const children: React.ReactNode[] = [];
     children.push(
       <Col span={8}>
         <Form.Item
-          name="name"
+          name="stuName"
           label="姓名"
           rules={[
             {
@@ -126,6 +155,8 @@ const AdvancedSearchForm = () => {
             onChange={(date, dateString) => {
               console.log(date, dateString);
             }}
+            // 时区设置为上海（UTC+8）
+            // Ant Design 的 DatePicker 默认使用本地时区，这里确保使用上海时区
           />
         </Form.Item>
       </Col>,
@@ -135,10 +166,12 @@ const AdvancedSearchForm = () => {
 
   const onFinish = (values: any) => {
     console.log("Received values of form: ", values);
+    // 更新搜索参数
+    setSearchParams(values);
   };
 
   // 删除选中项
-  const deleteSelected = () => {
+  const handleDeleteSelected = () => {
     if (selectedKeys.length === 0) {
       message.warning("请选择要删除的学生");
       return;
@@ -181,9 +214,28 @@ const AdvancedSearchForm = () => {
         open={createStatus}
         onClose={() => setCreateStatus(false)}
       />
+      <div style={listStyle}>
+        <StuEditableContext 
+          ref={stuEditableRef}
+          onSelectChange={handleSelectChange} 
+          selectedData={selectedKeys} 
+          searchParams={searchParams}
+        />
+      </div>
     </>
   );
 };
+
+const listStyle: React.CSSProperties = {
+  textAlign: "center",
+  background: "#f5f5f5",
+  borderRadius: "8px",
+  marginTop: 16,
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+
 
 const App: React.FC = () => {
   const { token } = theme.useToken();
@@ -197,6 +249,7 @@ const App: React.FC = () => {
     boxSizing: "border-box",
   };
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [searchParams, setSearchParams] = useState<any>({});
 
   
 
@@ -205,24 +258,9 @@ const App: React.FC = () => {
     setSelectedKeys(keys);
   };
 
-  // 删除选中项
-  const deleteSelected = () => {
-    if (selectedKeys.length === 0) {
-      message.warning("请选择要删除的学生");
-      return;
-    }
-    message.success(`成功删除 ${selectedKeys.length} 个学生`);
-    setSelectedKeys([]);
-  }
-
   return (
-    <SelectedContext.Provider value={[selectedKeys, setSelectedKeys]}>
-      <>
-        <AdvancedSearchForm />
-        <div style={listStyle}>
-          <StuEditableContext onSelectChange={handleSelectChange} selectedData={selectedKeys} />
-        </div>
-      </>
+    <SelectedContext.Provider value={[selectedKeys, setSelectedKeys, searchParams, setSearchParams]}>
+      <AdvancedSearchForm />
     </SelectedContext.Provider>
   );
 };

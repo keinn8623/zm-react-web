@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import ScoreEditableContext from "./ScoreEditableContex";
 import { Button, message } from "antd";
 import { useState } from "react";
+import TeacherAdvancedSearch from "./TeacherAdvancedSearch";
 
 const ScoreRecord: React.FC = () => {
   const [uploadStatus, setUploadStatus] = useState(false);
@@ -44,7 +45,7 @@ const ScoreRecord: React.FC = () => {
           导入文件
         </Button>
       </div>
-      {uploadStatus && <ScoreEditableContext />}
+      <TeacherAdvancedSearch />
     </Layout>
   );
 };
